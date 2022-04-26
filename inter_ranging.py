@@ -25,8 +25,9 @@ args = parser.parse_args()
 
 ## -------------------------- PARAMETERS ------------------------ ##
 # - - - - - - - - adjust these to match settings.json - - - - - - - - #
-num_drones = 3                 # total number of drones in simulation
-start_locs = np.array([[4,0], [8,2], [6,-2]])  # initialization locations 
+num_drones = 4                 # total number of drones in simulation
+start_locs = np.array([[100,-100], [23,-70], [90,-201], [19,-270]])  # initialization locations 
+z = [30, 70, 20, 20]
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 global_frame = False            # whether to shift drone coordinates to global frame
 speed = 5
@@ -35,26 +36,31 @@ adaptive_lookahead = 1
 
 # data collection parameters
 interval = 1              # time between collections in seconds
-num_collections = 120
-timeout = num_collections * interval
+num_collections = 50
+timeout = 120
 run_name = '/' + str(num_collections) + '_samples_' + str(num_drones) + '_drones/'
 
 paths = []
 
-paths.append([airsim.Vector3r(125,0,-7),
-              airsim.Vector3r(125,-130,-7),
-              airsim.Vector3r(0,-130,-7),
-              airsim.Vector3r(0,0,-7)])
+paths.append([airsim.Vector3r(0,-130,-70)])
 
-paths.append([airsim.Vector3r(125,0,-7),
-              airsim.Vector3r(125,-130,-7),
-              airsim.Vector3r(0,-130,-7),
-              airsim.Vector3r(0,0,-7)])
+paths.append([airsim.Vector3r(-135,0,-30)])
 
-paths.append([airsim.Vector3r(125,0,-7),
-              airsim.Vector3r(125,-130,-7),
-              airsim.Vector3r(0,-130,-7),
-              airsim.Vector3r(0,0,-7)])
+paths.append([airsim.Vector3r(-62,0,-20),
+              airsim.Vector3r(-62,-69,-20)])
+
+paths.append([airsim.Vector3r(0,72,-20),
+              airsim.Vector3r(-64,72,-20)])
+
+# paths.append([airsim.Vector3r(125,0,-7),
+#               airsim.Vector3r(125,-130,-7),
+#               airsim.Vector3r(0,-130,-7),
+#               airsim.Vector3r(0,0,-7)])
+
+# paths.append([airsim.Vector3r(125,0,-7),
+#               airsim.Vector3r(125,-130,-7),
+#               airsim.Vector3r(0,-130,-7),
+#               airsim.Vector3r(0,0,-7)])
 
 # postprocess poses to generate labels
 def gen_ranges(sensors, num_drones, count, pose_folder):
@@ -110,18 +116,19 @@ if __name__ == "__main__":
         else:
             print ("Successfully created the directory")
 
-        # initial scan
-        sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
-                    cam_num=0, pose_num=0)
-        for j in range(num_drones-1):
-            sensors.collectData("Drone"+str(j+1), get_cam_data=False, get_lidar_data=False, pose_num=0)
-        print('collecting data ' + str(0))
-
         # take off
         print("taking off...")
         cmds = []
         for i in range(num_drones):
             cmd = client.takeoffAsync(vehicle_name="Drone"+str(i))
+            cmds.append(cmd)
+        for cmd in cmds:
+            cmd.join()
+
+        print("ascend to hover altitude")
+        cmds = []
+        for i in range(num_drones):
+            cmd = client.moveToZAsync(z=-z[i], velocity=1, vehicle_name="Drone"+str(i))
             cmds.append(cmd)
         for cmd in cmds:
             cmd.join()
@@ -140,7 +147,7 @@ if __name__ == "__main__":
 
             # data collection
             count = 0
-            for i in range(1,num_collections):
+            for i in range(num_collections):
                 sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
                             cam_num = i, pose_num = i)
                 for j in range(num_drones-1):

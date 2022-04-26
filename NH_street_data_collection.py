@@ -54,7 +54,7 @@ adj = {'NW': ['CW', 'NC'],
        'SC': ['SW', 'CC', 'SE'],
        'SE': ['SC', 'CE']}
 
-gridlen = 10
+gridlen = 130
 
 coords = {'NW': [gridlen, -gridlen],
           'NC': [gridlen, 0.0],
@@ -174,7 +174,7 @@ if __name__ == "__main__":
             print ("Successfully created the directory")
 
         # initial scan
-        sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = True, get_calib_data=True,
+        sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
                     cam_num=0, lidar_num=0, pose_num=0, calib_num=0)
         for j in range(num_drones-1):
             sensors.collectData("Drone"+str(j+1), get_cam_data=False, get_lidar_data=False, pose_num=0)
@@ -204,7 +204,7 @@ if __name__ == "__main__":
             # data collection
             count = 0
             for i in range(1,num_collections):
-                sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = True, get_calib_data=False,
+                sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
                             cam_num = i, lidar_num = i, pose_num = i, calib_num=i)
                 for j in range(num_drones-1):
                     sensors.collectData("Drone"+str(j+1), get_cam_data = False, get_lidar_data = False, pose_num = i)

@@ -14,8 +14,7 @@ import argparse
 
 from mySensorData import mySensorData
 
-# Flies multiple drones through the streets of neighborhood
-# assume all drones start in CC
+# Collect data for lidar slam
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--postprocess', action='store_true', default=False, 
@@ -26,35 +25,38 @@ args = parser.parse_args()
 ## -------------------------- PARAMETERS ------------------------ ##
 # - - - - - - - - adjust these to match settings.json - - - - - - - - #
 num_drones = 1                  # total number of drones in simulation
-start_locs = np.array([[1,0], [3,0]])  # initialization locations 
+start_locs = np.array([[1,0]])  # initialization locations
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 #z = [0.9, 0.75]                          # flying altitudes
 z = [0.75, 0.75]
 drone_names = ["Drone" + str(i) for i in range(num_drones)]
 
 global_frame = False            # whether to shift drone coordinates to global frame
-speed = 1
+speed = 5
 lookahead = -1
 adaptive_lookahead = 0
 
 # data collection parameters
-interval = 0.1              # time between collections in seconds
-num_collections = 70
-timeout = 70
-run_name = '/' + str(num_collections) + '_samples_' + str(num_drones) + '_drones/'
+interval = 1              # time between collections in seconds
+num_collections = 10
+timeout = 10
+env_name = 'blocks'  # user set this
+run_name = '/' + env_name + '_' + str(num_collections) + '_samples_1'
 
 paths = []
 
-# starting area loop
-paths.append([airsim.Vector3r(0,-8,-z[0]),
-              airsim.Vector3r(-12,-8,-z[0]),
-              airsim.Vector3r(-12,0,-z[0]),
-              airsim.Vector3r(0,0,-z[0])])
+# blocks environment
+# paths.append([airsim.Vector3r(-25,20,-z[0]),
+#               airsim.Vector3r(-25,100,-z[0]),
+#               airsim.Vector3r(-25,180,-z[0]),
+#               airsim.Vector3r(0,200,-z[0])])
 
-paths.append([airsim.Vector3r(-12,0,-z[1]),
-              airsim.Vector3r(-12,-8,-z[1]),
-              airsim.Vector3r(0,-8,-z[1]),
-              airsim.Vector3r(0,0,-z[1])])
+paths.append([airsim.Vector3r(0,20,-z[0])])
+
+# paths.append([airsim.Vector3r(-12,0,-z[1]),
+#               airsim.Vector3r(-12,-8,-z[1]),
+#               airsim.Vector3r(0,-8,-z[1]),
+#               airsim.Vector3r(0,0,-z[1])])
 
 # kitchen corridor
 # paths.append([airsim.Vector3r(-3,0,-0.75),
@@ -90,8 +92,7 @@ if __name__ == "__main__":
     print("initializing data collection...")
     os.chdir('C:/Users/Adam/NAVLAB/AirSim/Data') # user dependent path
     datapath = os.getcwd()
-    base_folder = datapath + '/multi_agent_lidar/' + run_name
-    cam_folder = base_folder + '/images/'
+    base_folder = datapath + '/lidar_slam/' + run_name
     pose_folder = base_folder + '/poses/'
     lidar_folder = base_folder + '/lidar/'
     drone_folders = ['/' + drone_names[i] + '/' for i in range(num_drones)]
@@ -100,7 +101,6 @@ if __name__ == "__main__":
     sensors = num_drones * [None]
     for i in range(num_drones):
         sensors[i] = mySensorData(client, compress_img=False, 
-                        cam_folder=cam_folder + drone_folders[i], 
                         lidar_folder=lidar_folder + drone_folders[i], 
                         pose_folder=pose_folder + drone_folders[i])
 
@@ -111,11 +111,9 @@ if __name__ == "__main__":
             if os.path.isdir(base_folder):
                 shutil.rmtree(base_folder)
             os.mkdir(base_folder)
-            os.mkdir(cam_folder)
             os.mkdir(lidar_folder)
             os.mkdir(pose_folder)
             for i in range(num_drones):
-                os.mkdir(cam_folder + drone_folders[i])
                 os.mkdir(lidar_folder + drone_folders[i])
                 os.mkdir(pose_folder + drone_folders[i])
         except OSError:
@@ -138,13 +136,13 @@ if __name__ == "__main__":
         for cmd in cmds:
             cmd.join()
 
-        print("ascend to hover altitude")
-        cmds = []
-        for i in range(num_drones):
-            cmd = client.moveToZAsync(z=-z[i], velocity=1, vehicle_name=drone_names[i])
-            cmds.append(cmd)
-        for cmd in cmds:
-            cmd.join()
+        # print("ascend to hover altitude")
+        # cmds = []
+        # for i in range(num_drones):
+        #     cmd = client.moveToZAsync(z=-z[i], velocity=1, vehicle_name=drone_names[i])
+        #     cmds.append(cmd)
+        # for cmd in cmds:
+        #     cmd.join()
 
         try:
             # begin flying
@@ -162,7 +160,7 @@ if __name__ == "__main__":
             count = 0
             for i in range(1,num_collections):
                 for j in range(num_drones):
-                    sensors[j].collectData(drone_names[j], get_cam_data = True, get_lidar_data = True,
+                    sensors[j].collectData(drone_names[j], get_lidar_data = True,
                             cam_num = i, lidar_num = i, pose_num = i)
 
                     state = client.getMultirotorState(vehicle_name=drone_names[j])

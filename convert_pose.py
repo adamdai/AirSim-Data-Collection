@@ -79,6 +79,8 @@ def get_transform(pose, inv=False, isDronePose=False):
         transform_pose = make_transform(rotmat_b_to_n,translation)
     return transform_pose
 
+# (phi, theta, psi) - (roll, pitch, yaw)
+# returns in radians?
 def quaternion_to_eul(q):
     q0 = q.w_val
     q1 = q.x_val
@@ -112,6 +114,15 @@ def make_transform(rotmat,t):
 
 def make_transform_inv(rotmat,t):
     return np.vstack((np.hstack((np.transpose(rotmat),-np.dot(np.transpose(rotmat),np.reshape(t,(3,1))))),[0,0,0,1]))
+
+def airsimpos2np(pos):
+    return np.array([pos.x_val, pos.y_val, pos.z_val])
+
+# -pi to pi wrapped angle subtraction
+def angle_diff(theta1, theta2):
+    diff = theta1 - theta2
+    diff = (diff + 180) % 360 - 180
+    return diff
 
 # #####
 # num_files = 1 # number of time steps
