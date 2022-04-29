@@ -1,25 +1,22 @@
-import setup_path 
+import airsim_data_collection.common.setup_path 
 import airsim
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import os
-import tempfile
 import pprint
 import cv2
 import time
-import math
 import pickle
-import csv
 
-from convert_calib import write_to_label_file
-from convert_pose import get_transform, quaternion_to_eul, eul_to_rotmat
+from airsim_data_collection.utility.convert_calib import write_to_label_file
+from airsim_data_collection.utility.convert_pose import get_transform, quaternion_to_eul, eul_to_rotmat
 
 
-class mySensorData:
-    """Sensor Data Collection class
+class KITTISensorData:
+    """KITTI Sensor Data Collection class
 
-    
+    Designed specifically with KITTI dataset formatting in mind
 
     Attributes
     ----------

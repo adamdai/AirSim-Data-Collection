@@ -1,4 +1,8 @@
-import setup_path 
+"""Script to teleport a drone to target (x,y) location in the environment
+
+"""
+
+import airsim_data_collection.common.setup_path
 import airsim
 import time
 import argparse

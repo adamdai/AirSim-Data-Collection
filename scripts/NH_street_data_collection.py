@@ -1,20 +1,23 @@
-import setup_path
+"""Neighborhood street data collection
+
+Fly multiple drones through the streets of the 'Neighborhood' environment.
+
+The streets are arranged in a 3x3 grid. Each grid location is labeled based on the
+dictionaries defined below (i.e. 'NW' is north-west, 'CE' is center-east, etc)
+
+"""
+
+import airsim_data_collection.common.setup_path
 import airsim
-import pprint
-import math
 import random
 import os
 import numpy as np
-
-import sys
 import time
 import shutil
 import argparse
 
-from mySensorData import mySensorData
+from airsim_data_collection.sensors.sensor_handler import SensorHandler
 
-# Flies multiple drones through the streets of neighborhood
-# assume all drones start in CC
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--postprocess', action='store_true', default=False, 
@@ -150,7 +153,7 @@ if __name__ == "__main__":
     split_folder = save_folder + '/ImageSets/'
 
     # initialize data collection module
-    sensors = mySensorData(client, 
+    sensors = SensorHandler(client, 
                         compress_img=False, cam_folder=cam_folder, lidar_folder=lidar_folder, 
                         pose_folder=pose_folder, calib_folder=calib_folder, label_folder=label_folder)
 
@@ -204,10 +207,10 @@ if __name__ == "__main__":
             # data collection
             count = 0
             for i in range(1,num_collections):
-                sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
+                sensors.collect_data("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
                             cam_num = i, lidar_num = i, pose_num = i, calib_num=i)
                 for j in range(num_drones-1):
-                    sensors.collectData("Drone"+str(j+1), get_cam_data = False, get_lidar_data = False, pose_num = i)
+                    sensors.collect_data("Drone"+str(j+1), get_cam_data = False, get_lidar_data = False, pose_num = i)
 
                 print('collecting data ' + str(i))
                 time.sleep(interval)

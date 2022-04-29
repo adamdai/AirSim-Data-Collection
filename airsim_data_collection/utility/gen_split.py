@@ -1,7 +1,12 @@
+"""Script to generate training and validation splits of data.
+
+"""
+
 import os
 import argparse
 import numpy as np
 import sklearn
+
 
 save_folder = '/1500_samples'
 
@@ -17,10 +22,10 @@ def gen_split(base_folder, N, val):
     test = all 
     trainval = all
     
-    train_file = base_folder+"train.txt"
-    val_file = base_folder+"val.txt"
-    test_file = base_folder+"test.txt"
-    trainval_file = base_folder+"trainval.txt"
+    train_file = base_folder + "train.txt"
+    val_file = base_folder + "val.txt"
+    test_file = base_folder + "test.txt"
+    trainval_file = base_folder + "trainval.txt"
 
     f=open(train_file, 'w')
     np.savetxt(f,train.astype(int),fmt='%06i')

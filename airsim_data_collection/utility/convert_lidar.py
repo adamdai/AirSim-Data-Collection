@@ -1,15 +1,20 @@
+"""Script to convert LiDAR data from (??) to .bin KITTI format.
+
+"""
+
 import numpy as np
 import os
 import pickle
 import argparse
 
-# input data dir
+
+# Input data dir
 os.chdir('/home/navlab-admin/AirSim-MOT/data/')
 datapath = os.getcwd()
 foldername = 'test'
 datafolder = datapath + foldername + '/lidar/'
 
-# output data dir
+# Output data dir
 outpath = datapath + foldername + '/processed/velodyne/'
 
 def convert_lidar(foldername):
@@ -33,7 +38,7 @@ def convert_lidar(foldername):
 
 if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser(description="Convert lidar data")
-    arg_parser.add_argument("foldername", type=str, help="name of the drone to teleport")   
+    arg_parser.add_argument("foldername", type=str, help="path to data")   
     args = arg_parser.parse_args() 
 
     foldername = args.foldername

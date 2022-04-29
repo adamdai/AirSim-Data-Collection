@@ -1,4 +1,12 @@
-import setup_path
+"""Generate drone inter-ranging data
+
+Tested with 'City' environment
+
+TODO: Include associated settings.json file
+
+"""
+
+import airsim_data_collection.common.setup_path
 import airsim
 import pprint
 import math
@@ -12,10 +20,8 @@ import shutil
 import argparse
 import itertools
 
-from mySensorData import mySensorData
+from airsim_data_collection.sensors.sensor_handler import SensorHandler
 
-# Flies multiple drones through the streets of neighborhood
-# assume all drones start in CC
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--postprocess', action='store_true', default=False, 
@@ -74,7 +80,7 @@ def gen_ranges(sensors, num_drones, count, pose_folder):
         for a,b in itertools.combinations(range(num_drones), 2):
             pos_a = sensors.read_pickle_file(pose_folder+fname[a])
             pos_b = sensors.read_pickle_file(pose_folder+fname[b])
-            sensors.saveRange(start_locs, a, b, pos_a, pos_b, i)
+            sensors.save_range(start_locs, a, b, pos_a, pos_b, i)
 
 
 if __name__ == "__main__":
@@ -97,7 +103,7 @@ if __name__ == "__main__":
     range_folder = base_folder + '/ranges/'
 
     # initialize data collection module
-    sensors = mySensorData(client, 
+    sensors = SensorHandler(client, 
                         compress_img=False, cam_folder=cam_folder, 
                         pose_folder=pose_folder, range_folder=range_folder)
 
@@ -148,10 +154,10 @@ if __name__ == "__main__":
             # data collection
             count = 0
             for i in range(num_collections):
-                sensors.collectData("Drone0", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
-                            cam_num = i, pose_num = i)
+                sensors.collect_data("Drone0", get_cam_data=True, get_lidar_data=False, get_calib_data=False,
+                            cam_num=i, pose_num=i)
                 for j in range(num_drones-1):
-                    sensors.collectData("Drone"+str(j+1), get_cam_data = False, get_lidar_data = False, pose_num = i)
+                    sensors.collect_data("Drone"+str(j+1), get_cam_data=False, get_lidar_data=False, pose_num=i)
 
                 print('collecting data ' + str(i))
                 time.sleep(interval)

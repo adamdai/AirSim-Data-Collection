@@ -1,13 +1,13 @@
 # In settings.json first activate computer vision mode: 
 # https://github.com/Microsoft/AirSim/blob/master/docs/image_apis.md#computer-vision-mode
 
-import setup_path 
+import airsim_data_collection.common.setup_path 
 import airsim
 
 import pprint
 import numpy as np
 
-from utility import airsimVec2npArr
+from airsim_data_collection.utility.utility import airsimVec2npArr
 
 client = airsim.VehicleClient()
 client.confirmConnection()

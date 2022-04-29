@@ -1,62 +1,27 @@
-import setup_path
+"""Leader and follow cars taking images of each other
+   
+   - Car 2 is leader, car 1 is follower
+   - Car 1 tracks a goal pose that is a fixed distance behind car 2
+
+Notes
+-----
+    Positive steer turns right, negative turns left
+
+Settings: 'settings_two_car.json'
+
+"""
+
+import airsim_data_collection.common.setup_path
 import airsim
-import pprint
-import math
-import random
 import os
 import numpy as np
-
-import sys
 import time
 import shutil
 import argparse
-import itertools
 
-from mySensorData import mySensorData
-from convert_pose import quaternion_to_eul, angle_diff, airsimpos2np
+from airsim_data_collection.sensors.sensor_handler import SensorHandler
+from airsim_data_collection.utility.convert_pose import quaternion_to_eul, angle_diff, airsimpos2np
 
-# Leader and follower taking images of each other
-# - Car 2 is leader, car 1 is follower
-# - Car 1 tracks a goal pose that is a fixed distance behind car 2
-#
-# Some notes:
-# - Positive steer turns right, negative turns left
-'''
-{
-	"SettingsVersion": 1.2,
-	"SimMode": "Car",
-
-	"CameraDefaults": {
-		"CaptureSettings": [
-		  {
-			"ImageType": 0,
-			"Width": 1920,
-			"Height": 1080,
-			"FOV_Degrees": 90,
-			"AutoExposureSpeed": 75,
-			"AutoExposureBias": 0,
-			"AutoExposureMaxBrightness": 0.64,
-			"AutoExposureMinBrightness": 0.03,
-			"MotionBlurAmount": 0,
-			"TargetGamma": 0.5,
-			"ProjectionMode": "",
-			"OrthoWidth": 5.12
-		  }
-		]
-	},
-	
-	"Vehicles": {
-		"Car1": {
-		  "VehicleType": "PhysXCar",
-		  "X": 10, "Y": 0, "Z": -2
-		},
-		"Car2": {
-		  "VehicleType": "PhysXCar",
-		  "X": 0, "Y": 0, "Z": -2
-		}
-    }
-}
-'''
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--postprocess', action='store_true', default=False, 
@@ -114,14 +79,14 @@ if __name__ == "__main__":
 
     # Setup data collection
     print("Initializing data collection...")
-    os.chdir('C:/Users/Adam/Projects/NAVLab/AirSim/Data')  # User dependent path
+    os.chdir('C:/Users/Adam/NAVLAB/AirSim/Data')  # User dependent path
     datapath = os.getcwd()
     base_folder = datapath + '/car_leader_follower/' + run_name
     cam_folder = base_folder + '/images/'
     pose_folder = base_folder + '/poses/'
 
     # Initialize data collection module
-    sensors = mySensorData(client, car=True, compress_img=False, cam_folder=cam_folder, pose_folder=pose_folder)
+    sensors = SensorHandler(client, car=True, compress_img=False, cam_folder=cam_folder, pose_folder=pose_folder)
     
     # Create new directory for data
     try:
@@ -181,9 +146,9 @@ if __name__ == "__main__":
             #print('throttle: ' + str(car1_controls.throttle))
 
             # Data collection
-            sensors.collectData("Car1", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
+            sensors.collect_data("Car1", get_cam_data = True, get_lidar_data = False, get_calib_data=False,
                         cam_num = i, pose_num = i)
-            sensors.collectData("Car2", get_cam_data = False, get_lidar_data = False, get_calib_data=False,
+            sensors.collect_data("Car2", get_cam_data = False, get_lidar_data = False, get_calib_data=False,
                         cam_num = i, pose_num = i)
             #print('collecting data ' + str(i))
             time.sleep(interval)

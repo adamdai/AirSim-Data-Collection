@@ -1,0 +1,34 @@
+{
+	"SettingsVersion": 1.2,
+	"SimMode": "Car",
+
+	"CameraDefaults": {
+		"CaptureSettings": [
+		  {
+			"ImageType": 0,
+			"Width": 1920,
+			"Height": 1080,
+			"FOV_Degrees": 90,
+			"AutoExposureSpeed": 75,
+			"AutoExposureBias": 0,
+			"AutoExposureMaxBrightness": 0.64,
+			"AutoExposureMinBrightness": 0.03,
+			"MotionBlurAmount": 0,
+			"TargetGamma": 0.5,
+			"ProjectionMode": "",
+			"OrthoWidth": 5.12
+		  }
+		]
+	},
+	
+	"Vehicles": {
+		"Car1": {
+		  "VehicleType": "PhysXCar",
+		  "X": 10, "Y": 0, "Z": -2
+		},
+		"Car2": {
+		  "VehicleType": "PhysXCar",
+		  "X": 0, "Y": 0, "Z": -2
+		}
+    }
+}

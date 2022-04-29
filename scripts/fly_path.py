@@ -1,4 +1,4 @@
-import setup_path
+import airsim_data_collection.common.setup_path
 import airsim
 
 import sys

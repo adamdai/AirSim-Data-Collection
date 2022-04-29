@@ -1,8 +1,9 @@
+"""Utilities for converting poses and transforming coordinate frames.
+
+"""
+
 import numpy as np
-import pickle
-import pprint
-import sys
-import os
+
 
 def write_to_label_file(data,obj_name,file_name):
     f=open(file_name,'a')
