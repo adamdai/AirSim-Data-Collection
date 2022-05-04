@@ -12,7 +12,7 @@ import time
 import shutil
 import argparse
 
-from airsim_data_collection.sensors.lidar_handler import LiDARHandler
+from airsim_data_collection.sensors.lidar_handler import LidarHandler
 
 
 parser = argparse.ArgumentParser()
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # Initialize data collection module for each drone
     sensors = num_drones * [None]
     for i in range(num_drones):
-        sensors[i] = LiDARHandler(client, lidar_folder=lidar_folder + drone_folders[i], 
+        sensors[i] = LidarHandler(client, lidar_folder=lidar_folder + drone_folders[i], 
                                   pose_folder=pose_folder + drone_folders[i])
 
     # If not in postprocess mode, begin by creating new directory for data

@@ -8,7 +8,7 @@ import time
 import pickle
 
 
-class LiDARHandler:
+class LidarHandler:
     """LiDAR Data Collection class
 
     Use to collect LiDAR point clouds and pose data
