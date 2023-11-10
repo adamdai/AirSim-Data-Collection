@@ -1,1 +1,4 @@
+# python=3.8
+numpy
+msgpack-rpc-python
 airsim
