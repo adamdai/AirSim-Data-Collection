@@ -2,3 +2,5 @@
 numpy
 msgpack-rpc-python
 airsim
+pygame
+keyboard
