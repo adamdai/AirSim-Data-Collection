@@ -41,6 +41,8 @@ class LidarHandler:
         self.start_time = time.time()
         self.frame_num = 1
 
+        self.prev_time = time.time()
+
 
     def collect_data(self, vehicle_name):
         """Collect LiDAR data from drone
@@ -68,8 +70,15 @@ class LidarHandler:
             File containing LiDAR point cloud
 
         """
+        #start_time = time.time()
         points, lidar_pose, time_stamp = self.get_lidar(vehicle_name)
-        print("lidar timestamp ", self.frame_num, ": ", time_stamp/1e9 - self.start_time)
+        #print("lidar timestamp ", self.frame_num, ": ", time_stamp/1e9 - self.start_time)
+        #print("lidar collection time: ", time.time() - start_time)
+        print("lidar collection time: ", time.time() - self.prev_time)
+        self.prev_time = time.time()
+
+        # Convert lidar pose from vehicle frame to world frame
+        # TODO
 
         # Save LiDAR pose
         pos = lidar_pose.position
@@ -88,39 +97,6 @@ class LidarHandler:
         final_points.tofile(filename_pc)
         
         self.frame_num += 1
-    
-
-    def save_pose(self, im_num, vehicle_name):
-        """Save vehicle pose data
-
-        Parameters
-        ----------
-        im_num : int
-            Frame number
-        vehicle_name : str
-            Vehicle name to query for pose
-        
-        Generates
-        ---------
-        .txt file
-            File containing pose as (xyz) position and (xyzw) quaternion orientation
-
-        """
-        if self.car:
-            state = self.client.getCarState(vehicle_name=vehicle_name)
-        else:
-            state = self.client.getMultirotorState(vehicle_name=vehicle_name)
-        print("pose timestamp ", im_num, ": ", state.timestamp/1e9 - self.start_time)
-
-        pos = state.kinematics_estimated.position
-        ori = state.kinematics_estimated.orientation
-
-        # Save normal .txt file with position and orientation
-        filename_pose = self.pose_folder + ("%.6d.txt" % im_num)
-        op = open(os.path.normpath(filename_pose), 'a+')
-        op.write(str(pos.x_val) + ', ' + str(pos.y_val) + ', ' + str(pos.z_val) + '\n')
-        op.write(str(ori.x_val) + ', ' + str(ori.y_val) + ', ' + str(ori.z_val) + ', ' + str(ori.w_val))
-        op.close()
 
 
     def get_lidar(self, vehicle_name): 

@@ -1,6 +1,7 @@
 import airsim_data_collection.common.setup_path
 import airsim
 
+import numpy as np
 import sys
 import time
 
@@ -8,35 +9,40 @@ print("""Fly a path in an Unreal Engine environment""")
 
 # ===================== Environment and path parameters ===================== #
 
-# Starting offset (coordinates of PlayerStart object in meters)
-x_init = -67.300
-y_init = 15.600
-z_init = 0.20
+PLAYER_START = np.array([-1647.25354, -2999.841553, 366.904236])
 
-# AirSim initialization offset (initial X,Y,Z in AirSim/settings.json)
-x_offset = 0.0
-y_offset = 0.0
-z_offset = -2.0
+WAYPOINTS = np.array([[6360.0, -2930.0, 570.0],
+             [6760.0, -520.0, 560.0],
+             [6760.0, 3570.0, 560.0],
+             [6280.0, 3900.0, 560.0],
+             [6280.0, 7480.0, 640.0],
+             [6750.0, 8030.0, 640.0],
+             [6630.0, 11310.0, 640.0],
+             [6000.0, 12000.0, 640.0],
+             [-3000.0, 11880.0, 600.0],
+             [-2920.0, 7410.0, 600.0],
+             [-3040.0, -2780.0, 600.0]])
 
-# Flying speed
-speed = 1.0
+path_len = len(WAYPOINTS)
 
-# ========================== Functions ========================== #
+path = []
+for i in range(path_len):
+    waypt = (WAYPOINTS[i] - PLAYER_START) / 100.0
+    path.append(airsim.Vector3r(waypt[0], waypt[1], -waypt[2]))
 
-# Transform from world frame (drone start at (0,0,0)) to AirSim frame
-# Takes an (x,y,z) tuple as input and outputs an (x,y,z) tuple
-def world2airsim(pos):
-    return (pos[0] - x_offset,
-            pos[1] - y_offset,
-            pos[2] - z_offset)
 
-# Transform from Unreal coordinates to AirSim coordinates
-# Takes an (x,y,z) tuple as input and outputs an (x,y,z) tuple
-def unreal2airsim(pos):
-    wpos = (pos[0] - x_init,
-            pos[1] - y_init,
-            -(pos[2] - z_init))
-    return world2airsim(wpos)
+
+
+# MoveOnPath settings (https://microsoft.github.io/AirSim/apis/#apis-for-multirotor)
+#drivetrain = airsim.DrivetrainType.MaxDegreeOfFreedom  
+drivetrain = airsim.DrivetrainType.ForwardOnly
+yaw_mode = airsim.YawMode(False, 0)  # (yaw_or_rate, is_rate)
+                        
+speed = 4    # speed
+timeout = 300  # seconds
+lookahead = 15  # how far to look ahead, default = -1 (auto-decide)
+adaptive_lookahead = 1  # whether to apply adaptive lookahead, default = 1 (yes)
+
 
 
 # ========================== Main Code ========================== #
@@ -64,38 +70,13 @@ if state.landed_state == airsim.LandedState.Landed:
     print("take off failed...")
     sys.exit(1)
 
-# Move to position
-# upos = (-13.19, 15.6, 1.75)
-# apos = unreal2airsim(upos)
-
-# client.moveToPositionAsync(apos[0], apos[1], apos[2], speed).join()
-
-# upos = (-13.19, -0.20, 1.75)
-# apos = unreal2airsim(upos)
-
-# client.moveToPositionAsync(apos[0], apos[1], apos[2], speed).join()
-
-# upos = (-1.0, -0.20, 1.75)
-# apos = unreal2airsim(upos)
-
-# client.moveToPositionAsync(apos[0], apos[1], apos[2], speed).join()
 
 print("flying on path...")
-
-upos1 = (-13.19, 15.6, 1.75)
-apos1 = unreal2airsim(upos1)
-upos2 = (-13.19, -0.20, 1.75)
-apos2 = unreal2airsim(upos2)
-upos3 = (-1.0, -0.20, 1.75)
-apos3 = unreal2airsim(upos3)
+client.startRecording()
 
 try:
-
-    result = client.moveOnPathAsync([airsim.Vector3r(apos1[0],apos1[1],apos1[2]),
-                                    airsim.Vector3r(apos2[0],apos2[1],apos2[2]),
-                                    airsim.Vector3r(apos3[0],apos3[1],apos3[2])],
-                            speed, 300,
-                            airsim.DrivetrainType.ForwardOnly, airsim.YawMode(False,0), -1, 1).join()
+    result = client.moveOnPathAsync(path, speed, timeout,
+                            drivetrain, yaw_mode, lookahead, adaptive_lookahead).join()
 
 except KeyboardInterrupt:
     print("disarming...")
@@ -108,6 +89,8 @@ except KeyboardInterrupt:
 
 # # drone will over-shoot so we bring it back to the start point before landing.
 # client.moveToPositionAsync(0,0,z,1).join()
+
+client.stopRecording()
 
 print("landing...")
 client.landAsync().join()
