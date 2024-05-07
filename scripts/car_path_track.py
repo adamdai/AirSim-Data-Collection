@@ -31,16 +31,13 @@ if __name__ == "__main__":
     client = airsim.CarClient()
     client.confirmConnection()
     client.enableApiControl(True)
-
     car_controls = airsim.CarControls()
 
-    time.sleep(3)
-    # brake the car
-    car_controls.brake = 1
-    car_controls.throttle = 0
-    client.setCarControls(car_controls)
-    # wait until car is stopped
-    time.sleep(3)
+    start_unreal = np.array([39835.236, 62827.409, 15630.430])
+    goal_unreal = np.array([44570.0, -17780.0, 30930.0])
+    goal_airsim = (goal_unreal - start_unreal)[:2] / 100.0
+
+    goal = np.array([10.0, 10.0])
 
     # png_image = client.simGetImage("BirdsEyeCamera", airsim.ImageType.Scene)
     # print("captured image")
