@@ -1,0 +1,23 @@
+{
+  "SettingsVersion": 1.2,
+  "SimMode": "ComputerVision",
+
+  "CameraDefaults": {
+    "CaptureSettings": [
+      {
+      "ImageType": 0,
+      "Width": 720,
+      "Height": 480,
+      "FOV_Degrees": 90,
+      "AutoExposureSpeed": 100,
+      "AutoExposureBias": 0,
+      "AutoExposureMaxBrightness": 0.64,
+      "AutoExposureMinBrightness": 0.03,
+      "MotionBlurAmount": 0,
+      "TargetGamma": 1.0,
+      "ProjectionMode": "",
+      "OrthoWidth": 5.12
+      }
+    ]
+  }
+}
