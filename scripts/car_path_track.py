@@ -11,17 +11,11 @@ Settings: 'settings_two_car.json'
 
 """
 
-import airsim_data_collection.common.setup_path
 import airsim
-import os
 import numpy as np
 import time
-import shutil
-import argparse
 
-from airsim_data_collection.sensors.sensor_handler import SensorHandler
-from airsim_data_collection.utility.convert_pose import quaternion_to_eul, angle_diff, airsimpos2np
-
+from scipy.spatial.transform import Rotation
 
 
 ## -------------------------- MAIN ------------------------ ##
@@ -37,12 +31,16 @@ if __name__ == "__main__":
     goal_unreal = np.array([44570.0, -17780.0, 30930.0])
     goal_airsim = (goal_unreal - start_unreal)[:2] / 100.0
 
-    goal = np.array([10.0, 10.0])
+    # Path
+    path_3d = np.load("../data/manual_success_1.npz")['states'][::10]
+    n_waypoints = len(path_3d)
+    path = path_3d[:,:2]  # (x,y) waypoints
+    waypoint_index = 0
+    waypoint = path[0]
 
-    # png_image = client.simGetImage("BirdsEyeCamera", airsim.ImageType.Scene)
-    # print("captured image")
-    # # save image
-    # airsim.write_file(os.path.normpath('C:/Users/Adam/Documents/AirSim/image.png'), png_image)
+    goal = path[-1]
+
+    waypoint_thresh = 5.0  # meters
 
     # get vehicle position
     car_state = client.getCarState()
@@ -51,14 +49,38 @@ if __name__ == "__main__":
 
     try:
         print("driving routes")
-        while(True):
-            car_controls.steering = 0.0  #0.2 * np.sin(0.01 * count)
+        while(waypoint_index < n_waypoints):
+            
+            # Get car state
+            car_state = client.getCarState()
+            car_pose = client.simGetVehiclePose()
+            # print("car state: %s" % car_state)
+            x, y, z = car_pose.position.x_val, car_pose.position.y_val, car_pose.position.z_val
+            qx, qy, qz, qw = car_pose.orientation.x_val, car_pose.orientation.y_val, car_pose.orientation.z_val, car_pose.orientation.w_val
+            q = np.array([qx, qy, qz, qw])
+            r = Rotation.from_quat(q)
+            euler = r.as_euler('xyz')
+            heading = euler[2]
+            position_2d = np.array([x, y])
+
+            # Compute relative angle to waypoint
+            angle = np.arctan2(waypoint[1] - y, waypoint[0] - x)
+            angle_diff = angle - heading
+            if angle_diff > np.pi:
+                angle_diff -= 2*np.pi
+
+            # Proportional steering control
+            steering = np.clip(0.5 * angle_diff, -1.0, 1.0)
+
+            car_controls.steering = steering
             car_controls.throttle = 1.0
             client.setCarControls(car_controls)
-            time.sleep(1)
+            #time.sleep(1)
 
-            car_state = client.getCarState()
-            print("car state: %s" % car_state)
+            # If car is within 10 units of goal, break
+            if np.linalg.norm(position_2d - waypoint) < waypoint_thresh:
+                waypoint_index += 1
+                waypoint = path[waypoint_index]
 
 
     except KeyboardInterrupt:
