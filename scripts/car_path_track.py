@@ -32,7 +32,8 @@ if __name__ == "__main__":
     goal_airsim = (goal_unreal - start_unreal)[:2] / 100.0
 
     # Path
-    path_3d = np.load("../data/manual_success_1.npz")['states'][::10]
+    # path_3d = np.load("../data/manual_success_1.npz")['states'][::10]
+    path_3d = np.load("../data/path.npy")
     n_waypoints = len(path_3d)
     path = path_3d[:,:2]  # (x,y) waypoints
     waypoint_index = 0
@@ -44,12 +45,15 @@ if __name__ == "__main__":
 
     # get vehicle position
     car_state = client.getCarState()
-    print("car state: %s" % car_state)
+    #print("car state: %s" % car_state)
 
 
     try:
         print("driving routes")
         while(waypoint_index < n_waypoints):
+
+            print("waypoint index: %d" % waypoint_index)
+            print("waypoint: %s" % waypoint)
             
             # Get car state
             car_state = client.getCarState()
@@ -70,7 +74,8 @@ if __name__ == "__main__":
                 angle_diff -= 2*np.pi
 
             # Proportional steering control
-            steering = np.clip(0.5 * angle_diff, -1.0, 1.0)
+            kp_steer = 0.2
+            steering = np.clip(kp_steer * angle_diff, -1.0, 1.0)
 
             car_controls.steering = steering
             car_controls.throttle = 1.0
