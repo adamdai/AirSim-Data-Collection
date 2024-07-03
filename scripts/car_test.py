@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     time.sleep(3)
     # brake the car
-    car_controls.brake = 1
+    car_controls.brake = 0
     car_controls.throttle = 0
     client.setCarControls(car_controls)
     # wait until car is stopped
@@ -55,15 +55,16 @@ if __name__ == "__main__":
     acceleration_list = np.zeros((10,10,3))
     velocity_list = np.zeros((10,10,3))
     throttle_values = []
-
+    
     try:
         print("driving routes")
         for i, throttle in enumerate(np.linspace(0.1, 1.0, 10)):
             print("executing throttle: " + str(throttle))
             car_controls.steering = 0.0  #0.2 * np.sin(0.01 * count)
             car_controls.throttle = throttle
-            client.setCarControls(car_controls)
             car_controls.brake = 0  
+
+            client.setCarControls(car_controls)
             #time.sleep(10)
             throttle_values.append(throttle)
             for j in range(10):
@@ -89,18 +90,76 @@ if __name__ == "__main__":
 
 
                 time.sleep(1)
+            car_controls.throttle = 0
+            car_controls.brake = 1            
+            client.setCarControls(car_controls)
+
+            time.sleep(4)
 
             #print("car state: %s" % car_state)
+        print(acceleration_list)
+        # Extract the x acceleration values (assuming x is the first element in the third dimension)
+        x_accelerations = acceleration_list[:, :, 0]
+        y_accelerations = acceleration_list[:, :, 1]
+        z_accelerations = acceleration_list[:, :, 2]
+
+
+
+# Calculate the average of the x accelerations for each group of 10
+        average_x_accelerations = np.mean(x_accelerations, axis=1)
+        average_y_accelerations = np.mean(y_accelerations, axis=1)
+        average_z_accelerations = np.mean(z_accelerations, axis=1)
+
+        test_average_x_accelerations = np.mean(x_accelerations, axis=0)
+        test_average_y_accelerations = np.mean(y_accelerations, axis=0)
+        test_average_z_accelerations = np.mean(z_accelerations, axis=0)
+
+
+
+
+        
         acceleration_norm = np.linalg.norm(acceleration_list, axis=2)
         acceleration_norm_avg = np.mean(acceleration_norm, axis = 1)
         plt.figure()
-        plt.plot(throttle_values, acceleration_norm_avg, marker = 'o')
-        plt.title("Acceleration vs Throttle")
-        plt.xlabel("Throttle")
-        plt.ylabel("Acceleration")
+
+        fig, axs = plt.subplots(2, 2)
+        axs[0, 0].plot(throttle_values, average_x_accelerations)
+        axs[0, 0].set_title("x acceleration")
+        
+        axs[1, 0].plot(throttle_values, average_y_accelerations)
+        axs[1, 0].set_title("y acceleration")
+        
+        axs[1, 0].sharex(axs[0, 0])
+
+        axs[0, 1].plot(throttle_values, average_z_accelerations)
+        axs[0, 1].set_title("z acceleration")
+
+        axs[1, 1].plot(throttle_values, acceleration_norm_avg, marker = 'o')
+        axs[1, 1].set_title("Norm vs throttle")
+
         plt.grid(True)
         plt.show()
 
+        
+        plt.figure()
+        #test other axis?
+        fig, axs = plt.subplots(2, 2)
+        axs[0, 0].plot(throttle_values, test_average_x_accelerations)
+        axs[0, 0].set_title("t_x acceleration")
+        
+        axs[1, 0].plot(throttle_values, test_average_y_accelerations)
+        axs[1, 0].set_title("t_y acceleration")
+        
+        axs[1, 0].sharex(axs[0, 0])
+
+        axs[0, 1].plot(throttle_values, test_average_z_accelerations)
+        axs[0, 1].set_title("t_z acceleration")
+
+        axs[1, 1].plot(throttle_values, acceleration_norm_avg, marker = 'o')
+        axs[1, 1].set_title("t_Norm vs throttle")
+
+        plt.grid(True)
+        plt.show()
 
 
     except KeyboardInterrupt:
